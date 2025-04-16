@@ -51,6 +51,7 @@ public class PostController {
         if (newPost.getId() == null) {
             throw new ConditionsNotMetException("Id должен быть указан");
         }
+
         if (posts.containsKey(newPost.getId())) {
             Post oldPost = posts.get(newPost.getId());
             if (newPost.getDescription() == null || newPost.getDescription().isBlank()) {
