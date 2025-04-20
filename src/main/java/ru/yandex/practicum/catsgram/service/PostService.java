@@ -1,26 +1,43 @@
 package ru.yandex.practicum.catsgram.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.catsgram.exception.ConditionsNotMetException;
 import ru.yandex.practicum.catsgram.exception.NotFoundException;
 import ru.yandex.practicum.catsgram.model.Post;
+import ru.yandex.practicum.catsgram.model.User;
 
 import java.time.Instant;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 // Указываем, что класс PostService - является бином и его
 // нужно добавить в контекст приложения
 @Service
 public class PostService {
     private final Map<Long, Post> posts = new HashMap<>();
+    private final UserService userServices;
+
+    @Autowired
+    public PostService(UserService userServices) {
+        this.userServices = userServices;
+    }
 
     public Collection<Post> findAll() {
         return posts.values();
     }
 
     public Post create(Post post) {
+        Long authorId = post.getAuthorId();
+
+        Optional<User> optionalUser = userServices.findUserById(authorId);
+
+        if (optionalUser.isEmpty()) {
+            throw new ConditionsNotMetException("Автор с id = " + authorId + " не найден");
+        }
+
         if (post.getDescription() == null || post.getDescription().isBlank()) {
             throw new ConditionsNotMetException("Описание не может быть пустым");
         }
