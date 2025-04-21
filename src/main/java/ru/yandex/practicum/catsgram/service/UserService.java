@@ -1,9 +1,9 @@
 package ru.yandex.practicum.catsgram.service;
 
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 import ru.yandex.practicum.catsgram.exception.ConditionsNotMetException;
 import ru.yandex.practicum.catsgram.exception.DuplicatedDataException;
+import ru.yandex.practicum.catsgram.exception.NotFoundException;
 import ru.yandex.practicum.catsgram.model.User;
 
 import java.time.Instant;
@@ -20,7 +20,7 @@ public class UserService {
         return users.values();
     }
 
-    public User create(@RequestBody User user) {
+    public User create(User user) {
         if (user.getEmail() == null || user.getEmail().isBlank()) {
             throw new ConditionsNotMetException("Имейл должен быть указан");
         }
@@ -37,7 +37,7 @@ public class UserService {
         return user;
     }
 
-    public User update(@RequestBody User newUser) {
+    public User update(User newUser) {
         if (newUser.getId() == null) {
             throw new ConditionsNotMetException("Id должен быть указан");
         }
@@ -57,7 +57,15 @@ public class UserService {
             oldUser.setPassword(newUser.getPassword());
             return oldUser;
         }
-        throw new NegativeArraySizeException("Пользователь с id = " + newUser.getId() + " не найден");
+        throw new NotFoundException("Пользователь с id = " + newUser.getId() + " не найден");
+    }
+
+    public Optional<User> findUserById(Long userId) {
+        if (users.containsKey(userId)) {
+            return Optional.of(users.get(userId));
+        } else {
+            return Optional.empty();
+        }
     }
 
     private long getNextId() {
@@ -67,13 +75,5 @@ public class UserService {
                 .max()
                 .orElse(0);
         return ++currentMaxId;
-    }
-
-    public Optional<User> findUserById(Long userId) {
-        if (users.containsKey(userId)) {
-            return Optional.of(users.get(userId));
-        } else {
-            return Optional.empty();
-        }
     }
 }
